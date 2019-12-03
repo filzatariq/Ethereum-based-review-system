@@ -43,7 +43,7 @@ contract PRToken {
     }
 
     function reviewtoken(address reviewer, uint256 _value) public returns (bool success) { 
-    	require(balanceOf[reviewer] == 1, "Token not transferred");
+    	require(balanceOf[reviewer] >= 1, "Token not transferred");
     	balanceOf[reviewer] -= _value;
     	emit Burn(reviewer, _value);
     	return true;
