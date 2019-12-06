@@ -3,6 +3,9 @@ App = {
   contracts: {},
 
   initWeb3: async function() {
+    window.web3.currentProvider.publicConfigStore.on('update',function (e) {
+      console.log(e);
+    });
     // Modern dapp browsers...
     if (window.ethereum) {
       App.web3Provider = window.ethereum;
@@ -130,6 +133,9 @@ App = {
         return prodInstance.buyProduct(prodId, {value: price });
       }).then(function(result) {
         console.log("Bought");
+        $.notify("You have successfully bought the product. You can now review the product", "success");
+      }).catch(()=>{
+        $.notify("Something went wrong!. Please try again later", "error");
       });
     //   .then(App.contracts.PRToken.deployed().then(function(instance)
     // {
@@ -154,9 +160,11 @@ App = {
         return prodInstance.reviewProduct(id, review);
       }).then(function(result) {
         console.log("Reviewed");
+        $.notify("You have successfully added the review", "success");
         console.log(result);
       }).catch((error)=>{
-          console.log(error);
+        $.notify("You are not allowed to add the review", "error");
+        console.log(error);
       }).catch((error)=>{
         console.log(error);
 
@@ -228,6 +236,20 @@ App = {
       // return prodInstance.addProduct(skuId, name,desc, price, qty).call({gas: 4712388})
     }).then(()=>{
       $.notify("Product Added Successfully. Refresh Page to see the product", "success");
+    });
+    console.log("Done");
+  },
+
+  isBlocked:function(){
+    var prodInstance;
+    App.contracts.ProductReview.deployed().then(function(instance){
+      prodInstance = instance;
+      return prodInstance.isBlocked();
+      // return prodInstance.addProduct(skuId, name,desc, price, qty).call({gas: 4712388})
+    }).then((result)=>{
+      console.log(result);
+    }).catch((error)=>{
+      console.log(error);
     });
     console.log("Done");
   }

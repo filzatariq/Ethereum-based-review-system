@@ -43,8 +43,8 @@ contract ProductReview {
     uint reviewReturn = 1000;
 
      //for endorse
-     address[] public blackListed;
-     address[] public Endorsers;
+     mapping (address=>bool) public blackListed;
+     mapping (address=>bool) public Endorsers;
      //end for endorse
 
     modifier onlyAdmin() {
@@ -54,7 +54,8 @@ contract ProductReview {
 
     constructor(PRToken _tokencontract) public{
       admin = msg.sender;
-      tokencontract = PRToken(_tokencontract); 
+      tokencontract = PRToken(_tokencontract);
+      Endorsers[msg.sender] = true;
     }
     
     event sell(address _buyer, uint256 _token);
@@ -169,5 +170,8 @@ contract ProductReview {
         upVotes = products[skuId].endorse_value[reviewId].upVoteCount;
         downVotes = products[skuId].endorse_value[reviewId].downVoteCount;
      }
-    
+
+    function isBlocked() public view returns (bool blocked){
+        blocked = blackListed[msg.sender];
+    }
  }
