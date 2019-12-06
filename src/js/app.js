@@ -157,6 +157,9 @@ App = {
         console.log(result);
       }).catch((error)=>{
           console.log(error);
+      }).catch((error)=>{
+        console.log(error);
+
       });
     
   },
@@ -223,7 +226,9 @@ App = {
       prodInstance = instance;
       return prodInstance.addProduct(skuId, name,desc, price, qty);
       // return prodInstance.addProduct(skuId, name,desc, price, qty).call({gas: 4712388})
-    }); 
+    }).then(()=>{
+      $.notify("Product Added Successfully. Refresh Page to see the product", "success");
+    });
     console.log("Done");
   }
 

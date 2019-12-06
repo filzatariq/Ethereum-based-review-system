@@ -1,7 +1,6 @@
 App = {
   web3Provider: null,
   contracts: {},
-
   initWeb3: async function() {
     // Modern dapp browsers...
     if (window.ethereum) {
@@ -151,7 +150,11 @@ App = {
           $(clicked_ref).html("<i class=\"fa fa-thumbs-up\" aria-hidden=\"true\"></i>\n(" + parseInt(count )+ ")");
 
           console.log(result);
-      }).catch(err => console.log(err));
+      }).then(()=>{
+        $.notify("You have successfully upvoted the review!", "success");
+      }).catch(err => {
+        $.notify("You are not allowed to Vote this review", "error");
+      });
     }).catch(err => console.log(err));
   },
   downVote:function(skuId,reviewId,clicked_refer){
@@ -167,7 +170,12 @@ App = {
         $(clicked_ref).attr('count',parseInt(count));
           $(clicked_ref).html("<i class=\"fa fa-thumbs-down\" aria-hidden=\"true\"></i>\n(" + parseInt(count )+ ")");
         console.log(result);
-      }).catch(err => console.log(err));
+      }).then(()=>{
+        $.notify("You have successfully downvoted the review!", "success");
+      }).catch(err => {
+        $.notify("You are not allowed to Vote this review", "error");
+
+      });
     }).catch(err => console.log(err));
   },
   getVoteCount:function(skuId,reviewId){
@@ -191,7 +199,6 @@ $(function() {
   $(window).load(function() {
     App.initWeb3();
   });
-
 });
 
 $(document).on("click",".upvote",function () {
