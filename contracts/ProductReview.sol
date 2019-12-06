@@ -5,13 +5,19 @@ import "./PRToken.sol";
 contract ProductReview {
     
     struct Status {
-        
         bool isBuy;
         bool isReview;
         string reviewDescription;
         uint timeStamp;
     }
 
+    struct EndorseValue{
+         string status;
+         uint upVoteCount;
+         uint downVoteCount;
+         address[] upVoters;
+         address[] downVoters;
+    }
     
     struct Product {
         uint id;
@@ -25,6 +31,7 @@ contract ProductReview {
         string [] reviews;
         uint reviewsCount;
         mapping (address=>Status) productUserReview; //store the status of buyer
+        mapping (uint=>EndorseValue) endorse_value;
     }
 
     mapping (uint=>Product) public products;
@@ -34,6 +41,11 @@ contract ProductReview {
     uint public productCount;
     address public admin;
     uint reviewReturn = 1000;
+
+     //for endorse
+     address[] public blackListed;
+     address[] public Endorsers;
+     //end for endorse
 
     modifier onlyAdmin() {
         require(msg.sender == admin);
@@ -99,11 +111,20 @@ contract ProductReview {
            products[skuId].productUserReview[msg.sender].reviewDescription = review;
            products[skuId].productUserReview[msg.sender].timeStamp = now;
            //tokencontract.reviewed();
-           products[skuId].reviewsCount ++;
+
            products[skuId].rater = msg.sender;
               products[skuId].reviews.push(review);
            // require(tokencontract.burn(1), "Burning failed");
-           
+
+           //for endorse
+           //we will have three statuses [pending,approved,rejected]
+           products[skuId].endorse_value[products[skuId].reviewsCount].status = "pending";
+           products[skuId].endorse_value[products[skuId].reviewsCount].upVoteCount = 0;
+           products[skuId].endorse_value[products[skuId].reviewsCount].downVoteCount = 0;
+           //end for endorse
+
+           products[skuId].reviewsCount ++;
+
     }
     
     function getReview(uint skuId, address user) public view returns (string memory review)
@@ -111,11 +132,15 @@ contract ProductReview {
        return products[skuId].productUserReview[user].reviewDescription;
     }
     
-    function getAReview(uint skuId, uint index) public view returns (string memory review, address reviewer)
+    function getAReview(uint skuId, uint index) public view returns (string memory review, address reviewer,uint upvotes,uint downvotes,string memory status)
     {
        review = products[skuId].reviews[index];
        reviewer = products[skuId].rater;
+       upvotes = products[skuId].endorse_value[index + 1].upVoteCount;
+       downvotes = products[skuId].endorse_value[index + 1].downVoteCount;
+       status = products[skuId].endorse_value[index + 1].status;
     }
+
     function getReviewsCountOfaProduct(uint skuId) public view returns (uint)
     {
        return products[skuId].reviewsCount;
@@ -131,6 +156,18 @@ contract ProductReview {
        
     }
 
-    
+    function upVote(uint skuId,uint reviewId) public {
+         products[skuId].endorse_value[reviewId].upVoteCount++;
+    }
+
+    function downVote(uint skuId,uint reviewId) public{
+         products[skuId].endorse_value[reviewId].downVoteCount++;
+    }
+
+    function getVoteCount(uint skuId,uint reviewId) public view returns (uint upVotes,uint downVotes)
+     {
+        upVotes = products[skuId].endorse_value[reviewId].upVoteCount;
+        downVotes = products[skuId].endorse_value[reviewId].downVoteCount;
+     }
     
  }

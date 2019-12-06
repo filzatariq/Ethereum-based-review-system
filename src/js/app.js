@@ -66,6 +66,11 @@ App = {
     // return await App.initWeb3();  
     return App.bindEvents();  
   },
+  GetAll:function(){
+    App.contracts.ProductReview.deployed().then(function(all){
+      console.log(all);
+    });
+  },
 
   GetProduct:function(index){
     App.contracts.ProductReview.deployed().then(function(instance){
@@ -150,6 +155,8 @@ App = {
       }).then(function(result) {
         console.log("Reviewed");
         console.log(result);
+      }).catch((error)=>{
+          console.log(error);
       });
     
   },
@@ -175,7 +182,7 @@ App = {
         prodInstance = instance;
         return prodInstance.getReviewsCountOfaProduct(id);
       }).then(function(result) {
-
+      console.log(result);
         counts = result.c[0]
         console.log("Total Reviews : "+counts);
         for (i = 0; i < counts; i ++) {
@@ -218,7 +225,8 @@ App = {
       // return prodInstance.addProduct(skuId, name,desc, price, qty).call({gas: 4712388})
     }); 
     console.log("Done");
-  },
+  }
+
 };
 
 $(function() {

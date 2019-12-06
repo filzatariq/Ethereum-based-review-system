@@ -97,19 +97,92 @@ App = {
 
         console.log("review:"+result[0]);
         console.log("address:"+result[1]);
+        console.log("address:"+result[2]);
+        console.log("address:"+result[3]);
+        console.log("status:"+result[4]);
 
         var reviews = $('#productreviews');
         var template = $('#reviewtemplate');
 
         template.find('.review').text(result[0]);
+            template.find('.review').attr('skuId',id );
+            template.find('.review').attr('index',parseInt(index) + 1);
         template.find('.address').text(result[1]);
+        template.find('.upvote').html("<i class=\"fa fa-thumbs-up\" aria-hidden=\"true\"></i>\n(" + result[2] + ")");
+        template.find('.upvote').attr("count",result[2]);
+        template.find('.downvote').html("<i class=\"fa fa-thumbs-down\" aria-hidden=\"true\"></i>\n(" + result[3] + ")");
+        template.find('.downvote').attr("count",result[3]);
+
+        var icon_div_class ="";
+
+        var status =result[4];
+
+        if(status == "rejected"){
+          icon_div_class ="btn-danger";
+          template.find('.status-icon').addClass("fa-ban");
+        }else if (status == "approved"){
+          icon_div_class ="btn-success";
+          template.find('.status-icon').addClass("fa-check");
+        }else{
+          icon_div_class ="btn-info";
+          template.find('.status-icon').addClass("fa-clock-o");
+        }
+
+        template.find('.icon-div').addClass(icon_div_class);
+
         reviews.append(template.html());
       }).catch(err => console.log(err));
       }).catch(err => console.log(err));
   },
 
- 
 
+  upVote:function(skuId,reviewId,clicked_refer){
+    console.log(reviewId);
+    var prodInstance;
+    App.contracts.ProductReview.deployed().then(function(instance) {
+      prodInstance = instance;
+      // Execute adopt as a transaction by sending account
+      //reject(new Error("Whoops!"));
+      console.log(prodInstance);
+      prodInstance.upVote(skuId,reviewId).then(function(result) {
+        var clicked_ref = clicked_refer;
+        var count = parseInt($(clicked_ref).attr('count') ) + 1;
+          $(clicked_ref).attr('count',count);
+          $(clicked_ref).html("<i class=\"fa fa-thumbs-up\" aria-hidden=\"true\"></i>\n(" + parseInt(count )+ ")");
+
+          console.log(result);
+      }).catch(err => console.log(err));
+    }).catch(err => console.log(err));
+  },
+  downVote:function(skuId,reviewId,clicked_refer){
+    var prodInstance;
+    App.contracts.ProductReview.deployed().then(function(instance) {
+      prodInstance = instance;
+      // Execute adopt as a transaction by sending account
+      //reject(new Error("Whoops!"));
+      console.log(prodInstance);
+      prodInstance.downVote(skuId,reviewId).then(function(result) {
+          var clicked_ref = clicked_refer;
+        var count = parseInt($(clicked_ref).attr('count') ) + 1;
+        $(clicked_ref).attr('count',parseInt(count));
+          $(clicked_ref).html("<i class=\"fa fa-thumbs-down\" aria-hidden=\"true\"></i>\n(" + parseInt(count )+ ")");
+        console.log(result);
+      }).catch(err => console.log(err));
+    }).catch(err => console.log(err));
+  },
+  getVoteCount:function(skuId,reviewId){
+    var prodInstance;
+    App.contracts.ProductReview.deployed().then(function(instance) {
+      prodInstance = instance;
+      // Execute adopt as a transaction by sending account
+      //reject(new Error("Whoops!"));
+      console.log(prodInstance);
+      prodInstance.getVoteCount(skuId,reviewId).then(function(result) {
+
+        console.log(result);
+      }).catch(err => console.log(err));
+    }).catch(err => console.log(err));
+  },
 
 
 };
@@ -118,4 +191,16 @@ $(function() {
   $(window).load(function() {
     App.initWeb3();
   });
+
+});
+
+$(document).on("click",".upvote",function () {
+    var t =this;
+    //make it closest
+    App.upVote($(this).parent().find(".review").attr("skuId"),$(this).parent().find(".review").attr("index"),t);
+});
+
+$(document).on("click",".downvote",function () {
+    var t =this;
+  App.downVote($(this).parent().find(".review").attr("skuId"),$(this).parent().find(".review").attr("index"),t);
 });
