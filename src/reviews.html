@@ -6,12 +6,13 @@
     	<meta http-equiv="X-UA-Compatible" content="IE=edge">
     	<meta name="viewport" content="width=device-width, initial-scale=1">
     	<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link href="css/app.css" rel="stylesheet">
 		<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 		<title>Reviews</title>
 	</head>
 
 	<body>
-		<div class = "container"> 
+		<div class = "container hide" id="main_div">
 
 		<div class = "row">
 			<div class = "col-xs-12 col-sm-8 col-sm-push-2"> 
@@ -50,6 +51,21 @@
 
 
 		</div>
+		</div>
+
+		<div class="loading">
+			Loading ...
+		</div>
+
+		<div class="container hide" id="ban_div">
+			<div class="alert alert-danger">
+				<i class="fa fa-ban" aria-hidden="true"></i>
+				You are banned from this site for being dishonest
+			</div>
+
+			<div>
+				<img style="margin-left: 315px;height: 500px;" src="images/banned.jpg">
+			</div>
 		</div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->

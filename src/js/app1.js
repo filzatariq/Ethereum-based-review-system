@@ -23,11 +23,11 @@ App = {
     }
     // App.web3Provider = new Web3.providers.HttpProvider('http://localhost:8545');
     web3 = new Web3(App.web3Provider);
-
     return App.initContract();
   },
 
   initContract: function() {
+
     $.getJSON('ProductReview.json', function(data) {
       // Get the necessary contract artifact file and instantiate it with truffle-contract
       var ProductReviewArtifact = data;
@@ -38,9 +38,12 @@ App = {
     
       // Use our contract to retrieve and mark the adopted pets
       // return App.markAdopted();
+      App.initialSetup();
+
       return App.GetAllReviews();
 
     });
+    App.initialSetup();
 
     // return App.bindEvents();
      return App.GetAllReviews();
@@ -64,7 +67,9 @@ App = {
   },
 
   GetAllReviews: function() {
-    var id = 1;
+    console.log(id);
+    var url = new URL(window.location.href);
+    var id = url.searchParams.get("skuID");
     console.log(id);
     var prodInstance;
       App.contracts.ProductReview.deployed().then(function(instance) {
@@ -115,6 +120,12 @@ App = {
         var icon_div_class ="";
 
         var status =result[4];
+          template.find('.status-icon').removeClass("fa-ban");
+          template.find('.status-icon').removeClass("fa-check");
+          template.find('.status-icon').removeClass("fa-clock-o");
+          template.find('.icon-div').removeClass("btn-danger");
+          template.find('.icon-div').removeClass("btn-success");
+          template.find('.icon-div').removeClass("btn-info");
 
         if(status == "rejected"){
           icon_div_class ="btn-danger";
@@ -153,7 +164,11 @@ App = {
       }).then(()=>{
         $.notify("You have successfully upvoted the review!", "success");
       }).catch(err => {
-        $.notify("You are not allowed to Vote this review", "error");
+        if(err.code == 4001){
+          $.notify("You have rejected your vote", "info");
+        }else{
+          $.notify("You are not allowed to Vote this review", "error");
+        }
       });
     }).catch(err => console.log(err));
   },
@@ -191,8 +206,43 @@ App = {
       }).catch(err => console.log(err));
     }).catch(err => console.log(err));
   },
+  getAccountValues:function(skuId,reviewId){
+    var prodInstance;
+    App.contracts.ProductReview.deployed().then(function(instance) {
+      prodInstance = instance;
+      // Execute adopt as a transaction by sending account
+      //reject(new Error("Whoops!"));
+      console.log(prodInstance);
+      prodInstance.getAccountValues().then(function(result) {
 
+        console.log(result);
+      }).catch(err => console.log(err));
+    }).catch(err => console.log(err));
+  },
+    initialSetup:function () {
+  var prodInstance;
+  App.contracts.ProductReview.deployed().then(function(instance) {
+    prodInstance = instance;
+    // Execute adopt as a transaction by sending account
+    //reject(new Error("Whoops!"));
+    console.log(prodInstance);
+    prodInstance.getAccountValues().then(function(result) {
 
+      console.log(result);
+
+      $(".loading").addClass("hide");
+
+      if(result[0]){
+        $("#main_div").addClass("hide");
+        $("#ban_div").removeClass("hide");
+      }else{
+        $("#main_div").removeClass("hide");
+        $("#ban_div").addClass("hide");
+      }
+
+    }).catch(err => console.log(err));
+  }).catch(err => console.log(err));
+}
 };
 
 $(function() {

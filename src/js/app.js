@@ -4,7 +4,6 @@ App = {
 
   initWeb3: async function() {
     window.web3.currentProvider.publicConfigStore.on('update',function (e) {
-      console.log(e);
     });
     // Modern dapp browsers...
     if (window.ethereum) {
@@ -51,6 +50,8 @@ App = {
 
   },
   init: async function() {
+    App.initialSetup();
+
     // Load Products.
     var prodInstance;
 
@@ -60,6 +61,11 @@ App = {
     }).then(function(result){
 
       var counts = result.c[0];
+
+      if(parseInt(counts) < 1){
+          $("#no-prod-found-div").removeClass("hide");
+      }
+
       console.log("Total Prods : "+counts);
 
       for (i = 0; i < counts; i ++) {
@@ -103,6 +109,7 @@ App = {
           petTemplate.find('.btn-review').attr('id', result[0].c[0]);
           petTemplate.find('.get-review').attr('id', result[0].c[0]);
           petTemplate.find('.get-all-reviews').attr('id', result[0].c[0]);
+          petTemplate.find('.get-all-reviews').attr('href', "reviews.html?skuID="+result[0].c[0]);
           petTemplate.find('.reviewbox').attr('id', result[0].c[0]);
           petsRow.append(petTemplate.html());
     
@@ -134,9 +141,13 @@ App = {
       }).then(function(result) {
         console.log("Bought");
         $.notify("You have successfully bought the product. You can now review the product", "success");
-      }).catch(()=>{
-        $.notify("Something went wrong!. Please try again later", "error");
-      });
+      }).catch((err)=>{
+        if(err.code == 4001){
+          $.notify("You have rejected you product creation", "info");
+        }else {
+          $.notify("Something went wrong!. Please try again later", "error");
+        }
+        });
     //   .then(App.contracts.PRToken.deployed().then(function(instance)
     // {
     //   tokeninstance = instance;
@@ -163,7 +174,11 @@ App = {
         $.notify("You have successfully added the review", "success");
         console.log(result);
       }).catch((error)=>{
-        $.notify("You are not allowed to add the review", "error");
+        if(error.code == 4001){
+          $.notify("You have rejected review add", "info");
+        }else {
+          $.notify("You are not allowed to add the review", "error");
+        }
         console.log(error);
       }).catch((error)=>{
         console.log(error);
@@ -252,6 +267,30 @@ App = {
       console.log(error);
     });
     console.log("Done");
+  },
+  initialSetup:function () {
+      var prodInstance;
+      App.contracts.ProductReview.deployed().then(function(instance) {
+        prodInstance = instance;
+        // Execute adopt as a transaction by sending account
+        //reject(new Error("Whoops!"));
+        console.log(prodInstance);
+        prodInstance.getAccountValues().then(function(result) {
+
+          console.log(result);
+
+          $(".loading").addClass("hide");
+
+          if(result[0]){
+              $("#main_div").addClass("hide");
+              $("#ban_div").removeClass("hide");
+          }else{
+            $("#main_div").removeClass("hide");
+            $("#ban_div").addClass("hide");
+          }
+
+        }).catch(err => console.log(err));
+      }).catch(err => console.log(err));
   }
 
 };

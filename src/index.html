@@ -9,6 +9,7 @@
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/app.css" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -18,113 +19,126 @@
     <![endif]-->
   </head>
   <body>
-    <div class="container">
-      <div class="row">
-        <div class="col-xs-12 col-sm-8 col-sm-push-2">
-          <h1 class="text-center">Blockchain Based Reviews System</h1>
-          <hr/>
+
+  <div class="hide" id="main_div">
+      <div class="container-fluid">
+          <div class="row alert-info" style="border-radius: 100px;background-color: lightgray;">
+              <div>
+                  <h1 class="text-center" style="margin: 25px;">Blockchain Based Reviews System</h1>
+              </div>
+          </div>
           <br/>
-        </div>
-      </div>
+            <div class="alert alert-info hide" id="no-prod-found-div">
+                No Product Found
+            </div>
+          <div id="petsRow" class="row">
+              <!-- PRODUCTS LOAD HERE -->
+          </div>
 
-      <div id="petsRow" class="row">
-        <!-- PRODUCTS LOAD HERE -->
-      </div>
 
-
-      <!-- <button class="btn btn-default" type="button" class="aaaaaddProd">Add Product</button> -->
-     <!-- Button trigger modal -->
-  <button type="button" style="align:center;" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
-    Add Product
-  </button>
-    </div>
-
-   
-  
-  <!-- Modal -->
-  <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalCenterTitle">Add Product</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+          <!-- <button class="btn btn-default" type="button" class="aaaaaddProd">Add Product</button> -->
+          <!-- Button trigger modal -->
+          <button type="button" style="align:center;" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+              Add Product
           </button>
-        </div>
-
-        <div class="modal-body">
-            <form>
-                <div class="form-group">
-                  <label for="exampleInputEmail1">Product Name</label>
-                  <input type="text" class="form-control" id="name" aria-describedby="emailHelp" placeholder="Enter Name">
-                </div>
-                <div class="form-group">
-                  <label for="exampleInputPassword1">Product SKU</label>
-                  <input type="number" class="form-control" id="skuId" placeholder="SKU ID">
-                </div>
-                <div class="form-group">
-                    <label for="exampleInputPassword1">Product Descrition</label>
-                    <input type="text" class="form-control" id="desc" placeholder="Descrition">
-                </div>
-                <div class="form-group">
-                    <label for="exampleInputPassword1">Product Price</label>
-                    <input type="number" class="form-control" id="price" placeholder="Price">
-                </div>
-                <div class="form-group">
-                    <label for="exampleInputPassword1">Product Quantity</label>
-                    <input type="number" class="form-control" id="qty" placeholder="Quantity">
-                </div>                  
-                <button type="submit" data-dismiss="modal" class="btn btn-primary addProd">Submit</button>
-              </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        </div>
       </div>
-    </div>
+      <!-- Modal -->
+      <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+
+          <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+
+                  <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalCenterTitle">Add Product</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                      </button>
+                  </div>
+
+                  <div class="modal-body">
+                      <form>
+                          <div class="form-group">
+                              <label for="exampleInputEmail1">Product Name</label>
+                              <input type="text" class="form-control" id="name" aria-describedby="emailHelp" placeholder="Enter Name">
+                          </div>
+                          <div class="form-group">
+                              <label for="exampleInputPassword1">Product SKU</label>
+                              <input type="number" class="form-control" id="skuId" placeholder="SKU ID">
+                          </div>
+                          <div class="form-group">
+                              <label for="exampleInputPassword1">Product Descrition</label>
+                              <input type="text" class="form-control" id="desc" placeholder="Descrition">
+                          </div>
+                          <div class="form-group">
+                              <label for="exampleInputPassword1">Product Price</label>
+                              <input type="number" class="form-control" id="price" placeholder="Price">
+                          </div>
+                          <div class="form-group">
+                              <label for="exampleInputPassword1">Product Quantity</label>
+                              <input type="number" class="form-control" id="qty" placeholder="Quantity">
+                          </div>
+                          <button type="submit" data-dismiss="modal" class="btn btn-primary addProd">Submit</button>
+                      </form>
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+      <div id="petTemplate" style="display: none;">
+          <div class="col-sm-6 col-md-4 col-lg-3">
+              <div class="panel panel-default panel-pet">
+
+                  <!--Panel Heading-->
+                  <div class="panel-heading">
+                      <h3 class="panel-title"> </h3>
+                  </div>
+
+                  <div class="panel-body">
+                      <img alt="140x140" data-src="holder.js/140x140" class="img-rounded img-center" style="width: 100%;" src="https://images.yourstory.com/cs/wordpress/2016/08/125-fall-in-love.png" data-holder-rendered="true">
+                      <br/><br/>
+
+                      <strong>Descrition</strong>: <span class="desc"> </span><br/>
+                      <strong>Price</strong>: <span class="price"> </span><br/>
+                      <strong>Quantity</strong>: <span class="quant"> </span><br/><br/>
+
+                      <form>
+                          <div class="form-group">
+                              <label for="exampleFormControlTextarea1">Review:</label>
+                              <textarea class="form-control reviewbox" id="review" placeholder="Give review Here" rows="3"></textarea>
+                          </div>
+                          <button class="btn btn-sm btn-info btn-review" type="button" data-attribute="0" data-id="0">Add Review</button>
+<!--                          <button class="btn btn-sm btn-success get-review" type="button" id="0">Get My Review</button>-->
+                          <a href="reviews.html" class="btn btn-sm btn-success get-all-reviews" type="button" id="0">See Reviews</a>
+                          <hr/>
+
+                          <!--               <button class="btn btn-sm btn-success get-all-reviews" type="button" id="0" onclick="reviews.html" >All Reviews</button> -->
+                          <!--
+                                      <button class="btn btn-sm btn-success get-all-reviews" type="button" id="0">All Reviews </button> -->
+
+
+                      </form>
+                      <button class="btn btn-default btn-buy" type="button" id="0" data-attribute="0" data-id="0">Buy</button>
+                  </div>
+              </div>
+          </div>
+      </div>
   </div>
 
-    <div id="petTemplate" style="display: none;">
-      <div class="col-sm-6 col-md-4 col-lg-3">
-        <div class="panel panel-default panel-pet">
-
-          <!--Panel Heading-->
-          <div class="panel-heading">
-            <h3 class="panel-title"> </h3>
-          </div>
-
-          <div class="panel-body">
-            <img alt="140x140" data-src="holder.js/140x140" class="img-rounded img-center" style="width: 100%;" src="http://www.toptruckparts.com/wp-content/uploads/2018/08/product.png" data-holder-rendered="true">
-            <br/><br/>
-
-            <strong>Descrition</strong>: <span class="desc"> </span><br/>
-            <strong>Price</strong>: <span class="price"> </span><br/>
-            <strong>Quantity</strong>: <span class="quant"> </span><br/><br/>
-
-            <form>
-                <div class="form-group">
-                  <label for="exampleFormControlTextarea1">Review:</label>
-                  <textarea class="form-control reviewbox" id="review" placeholder="Give review Here" rows="3"></textarea>
-                </div>
-                <button class="btn btn-sm btn-info btn-review" type="button" data-attribute="0" data-id="0">Add Review</button>
-                <button class="btn btn-sm btn-success get-review" type="button" id="0">Get My Review</button>
-                <hr/>
-                <a href="reviews.html" class="btn btn-sm btn-success get-all-reviews" type="button" id="0">All Reviews</a>
-
-  <!--               <button class="btn btn-sm btn-success get-all-reviews" type="button" id="0" onclick="reviews.html" >All Reviews</button> -->
-<!-- 
-            <button class="btn btn-sm btn-success get-all-reviews" type="button" id="0">All Reviews </button> -->
-
-      
-            </form>
-
-            <br/>
-            <button class="btn btn-default btn-buy" type="button" id="0" data-attribute="0" data-id="0">Buy</button>
-          </div>
+    <div class="container hide" id="ban_div">
+        <div class="alert alert-danger">
+            <i class="fa fa-ban" aria-hidden="true"></i>
+            You are banned from this site for being dishonest
         </div>
-      </div>
+
+        <div>
+            <img style="margin-left: 315px;height: 500px;" src="images/banned.jpg">
+        </div>
+    </div>
+
+    <div class="loading">
+        Loading ...
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

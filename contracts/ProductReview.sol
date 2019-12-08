@@ -17,6 +17,8 @@ contract ProductReview {
          uint downVoteCount;
          address[] upVoters;
          address[] downVoters;
+         mapping (address=>bool) user_endorsed;
+
     }
     
     struct Product {
@@ -27,7 +29,7 @@ contract ProductReview {
         uint quantity;
         address payable productOwner;
         bool isExist;
-        address rater; //address of reviewer
+        mapping (uint=>address) rater; //address of reviewer
         string [] reviews;
         uint reviewsCount;
         mapping (address=>Status) productUserReview; //store the status of buyer
@@ -45,6 +47,9 @@ contract ProductReview {
      //for endorse
      mapping (address=>bool) public blackListed;
      mapping (address=>bool) public Endorsers;
+
+     mapping (address=>uint) public honestReviews;
+     mapping (address=>uint) public disHonestReviews;
      //end for endorse
 
     modifier onlyAdmin() {
@@ -55,7 +60,7 @@ contract ProductReview {
     constructor(PRToken _tokencontract) public{
       admin = msg.sender;
       tokencontract = PRToken(_tokencontract);
-      Endorsers[msg.sender] = true;
+      Endorsers[msg.sender] = true; //at first make admin Endorser
     }
     
     event sell(address _buyer, uint256 _token);
@@ -113,15 +118,15 @@ contract ProductReview {
            products[skuId].productUserReview[msg.sender].timeStamp = now;
            //tokencontract.reviewed();
 
-           products[skuId].rater = msg.sender;
+           products[skuId].rater[products[skuId].reviewsCount] = msg.sender;
               products[skuId].reviews.push(review);
            // require(tokencontract.burn(1), "Burning failed");
 
            //for endorse
            //we will have three statuses [pending,approved,rejected]
-           products[skuId].endorse_value[products[skuId].reviewsCount].status = "pending";
-           products[skuId].endorse_value[products[skuId].reviewsCount].upVoteCount = 0;
-           products[skuId].endorse_value[products[skuId].reviewsCount].downVoteCount = 0;
+           //products[skuId].endorse_value[products[skuId].reviewsCount].status = "pending";
+           //products[skuId].endorse_value[products[skuId].reviewsCount].upVoteCount = 0;
+           //products[skuId].endorse_value[products[skuId].reviewsCount].downVoteCount = 0;
            //end for endorse
 
            products[skuId].reviewsCount ++;
@@ -136,7 +141,7 @@ contract ProductReview {
     function getAReview(uint skuId, uint index) public view returns (string memory review, address reviewer,uint upvotes,uint downvotes,string memory status)
     {
        review = products[skuId].reviews[index];
-       reviewer = products[skuId].rater;
+       reviewer = products[skuId].rater[index];
        upvotes = products[skuId].endorse_value[index + 1].upVoteCount;
        downvotes = products[skuId].endorse_value[index + 1].downVoteCount;
        status = products[skuId].endorse_value[index + 1].status;
@@ -158,11 +163,39 @@ contract ProductReview {
     }
 
     function upVote(uint skuId,uint reviewId) public {
+         require(Endorsers[msg.sender],"You are not allowed to Endorse");//check if user is eligible to endorse
+         require(!products[skuId].endorse_value[reviewId].user_endorsed[msg.sender],"You have already endorsed");//you can only endorse on a review only once
+         //require(products[skuId].endorse_value[reviewId].status == "pending","You have already endorsed");//you can only endorse on review having status pending
+
+         products[skuId].endorse_value[reviewId].user_endorsed[msg.sender] = true;
          products[skuId].endorse_value[reviewId].upVoteCount++;
+
+         if(products[skuId].endorse_value[reviewId].upVoteCount > 0){
+            products[skuId].endorse_value[reviewId].status = "approved";
+            honestReviews[products[skuId].rater[reviewId]]++;
+         }
+
+        if(honestReviews[products[skuId].rater[reviewId]] > 1){
+            Endorsers[products[skuId].rater[reviewId]] = true;
+        }
     }
 
     function downVote(uint skuId,uint reviewId) public{
+         require(Endorsers[msg.sender],"You are not allowed to Endorse");//check if user is eligible to endorse
+         require(!products[skuId].endorse_value[reviewId].user_endorsed[msg.sender],"You have already endorsed");//you can only endorse on a review only once
+         //require(products[skuId].endorse_value[reviewId].status == "pending","You have already endorsed");//you can only endorse on review having status pending
+
+         products[skuId].endorse_value[reviewId].user_endorsed[msg.sender] = true;
          products[skuId].endorse_value[reviewId].downVoteCount++;
+
+         if(products[skuId].endorse_value[reviewId].downVoteCount > 0){
+            products[skuId].endorse_value[reviewId].status = "rejected";
+            disHonestReviews[products[skuId].rater[reviewId]]++;
+         }
+
+         if(disHonestReviews[products[skuId].rater[reviewId]] > 1){
+             blackListed[products[skuId].rater[reviewId]] = true;
+         }
     }
 
     function getVoteCount(uint skuId,uint reviewId) public view returns (uint upVotes,uint downVotes)
@@ -174,4 +207,12 @@ contract ProductReview {
     function isBlocked() public view returns (bool blocked){
         blocked = blackListed[msg.sender];
     }
+
+    function getAccountValues()  public view returns (bool blocked,bool isEndorser,uint honestReviewsVal,uint disHonestReviewsVal){
+        blocked = blackListed[msg.sender];
+        isEndorser = Endorsers[msg.sender];
+        honestReviewsVal = honestReviews[msg.sender];
+        disHonestReviewsVal = disHonestReviews[msg.sender];
+    }
+
  }
