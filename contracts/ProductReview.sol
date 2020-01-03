@@ -34,9 +34,23 @@ contract ProductReview {
         mapping (address=>Status) productUserReview; //store the status of buyer
         mapping (uint=>EndorseValue) endorse_value;
         mapping (address=>bool) Endorsers;
+        uint candidatesEndorsersCount;
+        address[] candidatesEndorsers;
+        address[] candidatesEndorsersC;
+
+    }
+
+    struct DiscountValue {
+        uint skuID;
+        address userAddr;
+        uint discountAmount;
     }
 
     mapping (uint=>Product) public products;
+
+    mapping (uint=>DiscountValue) public discountValues;
+
+    uint public discountCount;
 
     PRToken public tokencontract;
     uint[] productIds;
@@ -86,12 +100,16 @@ contract ProductReview {
 
         for(uint i=0; i < 5;i++){
              products[skuId].Endorsers[initialEndorsers[i]]=true;
+             products[skuId].candidatesEndorsers.push(initialEndorsers[i]);
+             products[skuId].candidatesEndorsersCount++;
         }
+
     }
     
     function buyProduct(uint skuId) public payable
     {
            require(products[skuId].isExist == true, "Product Not Exist");
+           require(products[skuId].productOwner != msg.sender, "You can buy your own product");
            require(products[skuId].quantity > 0, "Product Out of Stock");
            require (msg.value >= products[skuId].price , "Insufficient Ether passed");
            
@@ -104,11 +122,20 @@ contract ProductReview {
             {
                 msg.sender.transfer(msg.value - products[skuId].price); //extra ammount transferred
             }
-            products[skuId].productOwner.transfer(products[skuId].price-reviewReturn); //Product price transferred to seller"
+
+            uint minus_amount = reviewReturn;
+
+            for(uint i=0; i < discountCount;i++){
+                 if(discountValues[i].skuID == skuId && discountValues[i].userAddr == msg.sender){
+                    minus_amount = minus_amount + discountValues[i].discountAmount;
+                        delete discountValues[i];
+                 }
+            }
+
+            products[skuId].productOwner.transfer(products[skuId].price - minus_amount); //Product price transferred to seller"
               msg.sender.transfer(reviewReturn); //1000 weis returned to buyer"   
               require(tokencontract.transfer(msg.sender,diff),"transferred Unsuccessful");
               emit sell (msg.sender , diff);
-            
            
     }
     
@@ -182,9 +209,50 @@ contract ProductReview {
             honestReviews[products[skuId].rater[reviewId - 1]]++;
          }
 
-        if(honestReviews[products[skuId].rater[reviewId - 1]] > 1){
-            products[skuId].Endorsers[products[skuId].rater[reviewId - 1]] = true;
-        }
+        //if(honestReviews[products[skuId].rater[reviewId - 1]] > 0){
+        if(keccak256(bytes (products[skuId].endorse_value[reviewId].status)) == keccak256(bytes ("approved"))){
+            bool already_exists = false;
+            if(products[skuId].candidatesEndorsersCount != 0){
+             for(uint i=0; i < products[skuId].candidatesEndorsersCount - 1;i++){
+                if(products[skuId].rater[reviewId - 1] ==  products[skuId].candidatesEndorsers[i]){
+                    already_exists = true;
+                }
+             }
+            }
+
+         //   if(!already_exists){
+
+            products[skuId].candidatesEndorsers.push(products[skuId].rater[reviewId - 1]);
+            products[skuId].candidatesEndorsersC.push(products[skuId].rater[reviewId - 1]);
+            products[skuId].candidatesEndorsersCount++;
+
+            if(products[skuId].candidatesEndorsersC.length == 2){
+            uint randomNumForEndorser = rand(2);
+            uint randomNumForEndorser2 = rand(4);
+
+            products[skuId].Endorsers[products[skuId].candidatesEndorsersC[randomNumForEndorser]] = true;
+            products[skuId].Endorsers[products[skuId].candidatesEndorsers[randomNumForEndorser2]] = false;
+
+                 //selected_endorser = products[skuId].candidatesEndorsers;
+                 //products[skuId].Endorsers[products[skuId].rater[reviewId - 1]] = true;
+
+                 discountValues[discountCount].skuID = skuId;
+                 discountValues[discountCount].userAddr = products[skuId].candidatesEndorsersC[randomNumForEndorser];
+                 discountValues[discountCount].discountAmount = (10 * products[skuId].price) / 100;
+                 discountCount++;
+
+                 //change global endorsers
+                 initialEndorsers.push(products[skuId].rater[reviewId - 1]);
+                 uint randomNum = rand(5);
+                 initialEndorsers[randomNum] = initialEndorsers[5];
+                 delete initialEndorsers[5];
+                 initialEndorsers.length--;
+
+            //}
+                delete products[skuId].candidatesEndorsersC;
+            }
+            }
+
     }
 
     function downVote(uint skuId,uint reviewId) public{
@@ -215,11 +283,67 @@ contract ProductReview {
         blocked = blackListed[msg.sender];
     }
 
-    function getAccountValues()  public view returns (bool blocked,uint honestReviewsVal,uint disHonestReviewsVal,address a){
+    function getAccountValues()  public view returns (bool blocked,uint honestReviewsVal,uint disHonestReviewsVal){
         blocked = blackListed[msg.sender];
         honestReviewsVal = honestReviews[msg.sender];
         disHonestReviewsVal = disHonestReviews[msg.sender];
-        a = products[1].rater[1];
+        //a = products[1].rater[1];
+
+//        disc = discountValues;
     }
 
+    //get all the discount values
+    function getDiscountValues(uint index) public view returns (uint skuID, address addr ,uint amount ){
+        skuID = discountValues[index].skuID;
+        addr = discountValues[index].userAddr;
+        amount = discountValues[index].discountAmount;
+    }
+
+    //get discountCount
+    function getDiscountCount() public view returns (uint count ){
+        count = discountCount;
+    }
+
+    //get all the initial/global endorsers
+    function getInitialEndorsers() public view returns (address[] memory addresses ){
+        addresses = initialEndorsers;
+    }
+
+    //get endorsers of a product
+    function getProductCandidateEndorsers(uint skuId) public view returns (address[] memory addresses ){
+        addresses = products[skuId].candidatesEndorsers;
+    }
+
+    //get endorsers of a product all old and new
+    function getProductCandidateEndorsersAll(uint skuId) public view returns (address[] memory addresses ){
+        addresses = products[skuId].candidatesEndorsersC;
+    }
+
+    //get endorsers of a product
+    function getIsProductEndorsers(uint skuId,address addr) public view returns (bool isEndorser,address _addr ){
+       isEndorser = products[skuId].Endorsers[addr];
+       _addr = addr;
+    }
+
+    //function to generate random number
+    //https://blog.positive.com/predicting-random-numbers-in-ethereum-smart-contracts-e5358c6b8620
+    uint256 constant private FACTOR =  1157920892373161954235709850086879078532699846656405640394575840079131296399;
+    //function randView(uint max) pure private returns (uint256 result){
+//
+    //    uint256 factor = FACTOR * 100 / max;
+    //    uint256 lastBlockNumber = block.number - 1;
+    //    uint256 hashVal = uint256(blockhash(lastBlockNumber));
+//
+    //    return uint256((uint256(hashVal) / factor)) % max;
+    //}
+
+     //https://blog.positive.com/predicting-random-numbers-in-ethereum-smart-contracts-e5358c6b8620
+     function rand(uint max) public view returns (uint256 result){
+
+         uint256 factor = FACTOR * 100 / max;
+         uint256 lastBlockNumber = block.number - 1;
+         uint256 hashVal = uint256(blockhash(lastBlockNumber));
+
+         return uint256((uint256(hashVal) / factor)) % max;
+     }
  }

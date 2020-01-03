@@ -72,6 +72,11 @@ App = {
          App.GetProduct(i);
       }
     });
+    App.getAllDiscounts();
+    App.getProductCandidateEndorsers();
+    App.getGlobalEndorsers();
+    App.getProductEndorsers();
+    console.log("()())(()()()()()()()()()()())(())(");
     // return await App.initWeb3();  
     return App.bindEvents();  
   },
@@ -110,6 +115,8 @@ App = {
           petTemplate.find('.get-review').attr('id', result[0].c[0]);
           petTemplate.find('.get-all-reviews').attr('id', result[0].c[0]);
           petTemplate.find('.get-all-reviews').attr('href', "reviews.html?skuID="+result[0].c[0]);
+          petTemplate.find('.get-all-candidates').attr('href', "candidateEndorser.html?skuID="+result[0].c[0]);
+          petTemplate.find('.get-all-endorsers').attr('href', "endorser.html?skuID="+result[0].c[0]);
           petTemplate.find('.reviewbox').attr('id', result[0].c[0]);
           petsRow.append(petTemplate.html());
     
@@ -164,7 +171,8 @@ App = {
   AddReview: function() {
     var review = document.getElementById(this.id).value
     var id = this.id;
-    var prodInstance;
+    console.log(id,review);
+	var prodInstance;
       App.contracts.ProductReview.deployed().then(function(instance) {
         prodInstance = instance;
         // Execute adopt as a transaction by sending account
@@ -291,14 +299,179 @@ App = {
 
         }).catch(err => console.log(err));
       }).catch(err => console.log(err));
-  }
+  },
 
+  getDiscountVal: function (index) {
+    var prodInstance;
+    App.contracts.ProductReview.deployed().then(function (instance) {
+      prodInstance = instance;
+      prodInstance.getDiscountValues(index).then(function (result) {
+        console.log(result);
+        console.log(result[0].c[0]);
+        console.log(result[1]);
+        console.log(result[2].c[0]);
+        if (result[2].c[0] != 0) {
+          var reviews = $('#discounts');
+          var template = $('#discounttemplate');
+
+          template.find('.skuId').text(result[0].c[0]);
+          template.find('.address').text(result[1]);
+          template.find('.amount').text(result[2].c[0]);
+
+          reviews.append(template.html());
+        }
+      }).catch((err) => {
+        console.log(err);
+      });
+    });
+
+  },
+
+  getAllDiscounts: function() {
+        var prodInstance;
+        App.contracts.ProductReview.deployed().then(function(instance) {
+            prodInstance = instance;
+
+          App.contracts.ProductReview.deployed().then(function(instance) {
+            prodInstance = instance;
+            return prodInstance.getDiscountCount();
+          }).then(function(result) {
+            console.log(result);
+            counts = result.c[0];
+            console.log("Total Discounts : "+counts);
+            for (i = 0; i < counts; i ++) {
+              App.getDiscountVal(i);
+            }
+          });
+        });
+
+    },
+
+    getGlobalEndorsers: function() {
+        var prodInstance;
+        App.contracts.ProductReview.deployed().then(function(instance) {
+            prodInstance = instance;
+
+            App.contracts.ProductReview.deployed().then(function(instance) {
+                prodInstance = instance;
+                prodInstance.getInitialEndorsers().then((result)=>{
+                    console.log(result);
+                  for (var i = 0; i < result.length; i ++) {
+                    console.log(result[i]);
+
+                    var reviews = $('#globalend');
+                    var template = $('#globalendtemplate');
+
+                    template.find('.address').text(result[i]);
+
+                    reviews.append(template.html());
+                  }
+                });
+            })
+        });
+
+    },
+
+  getProductCandidateEndorsers: function() {
+        var prodInstance;
+    var url = new URL(window.location.href);
+    var id = url.searchParams.get("skuID");
+        App.contracts.ProductReview.deployed().then(function(instance) {
+            prodInstance = instance;
+
+            App.contracts.ProductReview.deployed().then(function(instance) {
+                prodInstance = instance;
+                prodInstance.getProductCandidateEndorsersAll(id).then((result)=>{
+                    console.log(result);
+                  for (var i = 0; i < result.length; i ++) {
+                      console.log(result[i]);
+
+                    var reviews = $('#candidates');
+                    var template = $('#candidatestemplate');
+
+                    template.find('.address').text(result[i]);
+
+                    reviews.append(template.html());
+                  }
+
+                });
+            })
+        });
+
+    },
+  getIsProductEndorsers: function(skuID,address) {
+        var prodInstance;
+
+        App.contracts.ProductReview.deployed().then(function(instance) {
+            prodInstance = instance;
+
+            App.contracts.ProductReview.deployed().then(function(instance) {
+                prodInstance = instance;
+                prodInstance.getIsProductEndorsers(skuID,address).then((result)=>{
+                    console.log(result);
+                });
+            })
+        });
+
+    },
+  getProductEndorsers: function() {
+        var prodInstance;
+    var url = new URL(window.location.href);
+    var id = url.searchParams.get("skuID");
+    var result;
+        App.contracts.ProductReview.deployed().then(function(instance) {
+            prodInstance = instance;
+
+            App.contracts.ProductReview.deployed().then(function(instance) {
+                prodInstance = instance;
+              prodInstance.getProductCandidateEndorsers(id).then((res)=>{
+                result = res;
+                for (var i = 0; i < result.length; i ++) {
+                  prodInstance.getIsProductEndorsers(id,result[i]).then((result2)=>{
+                    console.log(result2[0]);
+                    console.log(result2[1]);
+                    if(result2[0]){
+
+                      var reviews = $('#endorsers');
+                      var template = $('#endorserstemplate');
+
+                      template.find('.address').text(result2[1]);
+
+                      reviews.append(template.html());
+
+                    }
+                  });
+                }
+
+              });
+
+            });
+        });
+
+    },
+  pro: function(skuid) {
+    var prodInstance;
+
+    App.contracts.ProductReview.deployed().then(function(instance) {
+      prodInstance = instance;
+
+      App.contracts.ProductReview.deployed().then(function(instance) {
+        prodInstance = instance;
+        prodInstance.products(skuid).then((result)=>{
+          console.log(result);
+          console.log(result[8].c[0]);
+        });
+      })
+    });
+
+  }
 };
 
 $(function() {
   $(window).load(function() {
     App.initWeb3();
   });
+
 });
 
 // $(document).on('click', '.btn-review', App.AddReview);
